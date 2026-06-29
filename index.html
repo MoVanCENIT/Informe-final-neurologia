@@ -204,7 +204,7 @@
             .no-print, .btn, .btn-add, .acciones, input[type="checkbox"], select { display: none !important; }
             h2 { -webkit-print-color-adjust: exact; background-color: var(--azul-oscuro) !important; color: white !important; padding: 5px 10px; margin-top: 15px; }
             
-            /* NUEVO AJUSTE: Evita que las cuadrículas de datos compartidos se dividan de forma desprolija */
+            /* Evita que las cuadrículas de datos compartidos se dividan de forma desprolija */
             .grid-datos { 
                 background: none !important; 
                 border: 1px solid #eee; 
@@ -214,7 +214,7 @@
                 page-break-inside: avoid; 
             }
             
-            /* NUEVO AJUSTE: Evita que los recuadros de escalas, tablas o firmas queden cortados a la mitad */
+            /* Evita que los recuadros de escalas, tablas o firmas queden cortados a la mitad */
             .box-off, .box-on, table, tr, .firma-container, #campo-ea-progresion, .escala-container { 
                 background: white !important; 
                 -webkit-print-color-adjust: exact; 
@@ -225,7 +225,7 @@
             .item-check:not(.checked-print) { display: none !important; }
             .checked-print { display: inline-block; margin-right: 10px; font-weight: bold; }
             
-            /* NUEVO AJUSTE: Evita que un título quede solo al final de una página (huérfano) */
+            /* Evita que un título quede solo al final de una página (huérfano) */
             h2, h3 { page-break-after: avoid; }
             
             /* Ajuste para que los cuadros ON u OFF ocupen todo el ancho si el otro se oculta */
@@ -376,10 +376,10 @@
         </div>
 
         <div id="sec-escalas-wrapper">
-            <h2 id="tit-escalas">Escalas</h2>
+            <h2>Escalas</h2>
             
             <div id="subsec-ft-wrapper">
-                <h3 id="tit-ft">Fahn Tolosa</h3>
+                <h3>Fahn Tolosa</h3>
                 <div class="escala-container" id="container-ft">
                     <div class="box-off" id="box-ft-off">
                         <div class="box-title">Estado OFF</div>
@@ -398,7 +398,7 @@
             </div>
 
             <div id="subsec-ft-severidad">
-                <h3 id="tit-ft-severidad">Porcentaje de severidad (Fahn Tolosa)</h3>
+                <h3>Porcentaje de severidad (Fahn Tolosa)</h3>
                 <div class="grid-datos">
                     <div class="campo" id="campo-ft-sev-obt"><label>Valor Total Obtenido:</label><input type="number" id="ft-severidad-obtenido" oninput="calcSeveridadFT()"></div>
                     <div class="campo" id="campo-ft-sev-max"><label>Valor Total Máximo:</label><input type="number" id="ft-severidad-maximo" value="156" disabled></div>
@@ -407,7 +407,7 @@
             </div>
 
             <div id="subsec-updrs-wrapper">
-                <h3 id="tit-updrs">UPDRS</h3>
+                <h3>UPDRS</h3>
                 <div class="escala-container" id="container-updrs">
                     <div class="box-off" id="box-up-off">
                         <div class="box-title">Estado OFF</div>
@@ -424,21 +424,31 @@
                 </div>
             </div>
 
+            <!-- CAMBIO SOLICITADO: Bloque UPDRS III debajo de la escala UPDRS principal -->
+            <div id="subsec-updrs-iii">
+                <h3>UPDRS III</h3>
+                <div class="grid-datos">
+                    <div class="campo" id="campo-up3-suspension"><label>Horas desde suspensión de levodopa:</label><input type="text" id="up3-suspension"></div>
+                    <div class="campo" id="campo-up3-demora"><label>Demora en el ON (horas):</label><input type="text" id="up3-demora"></div>
+                    <div class="campo" id="campo-up3-respuesta"><label>Porcentaje de respuesta (%):</label><input type="text" id="up3-respuesta"></div>
+                </div>
+            </div>
+
             <div class="escala-container" id="subsec-se-hy">
                 <div id="box-wrapper-se">
-                    <h3 id="tit-se">Schwab & England</h3>
+                    <h3>Schwab & England</h3>
                     <div class="box-off" id="campo-se-off"><label>Total OFF (%):</label><input type="number" id="se-off" style="width:80px"></div>
                     <div class="box-on" id="campo-se-on" style="margin-top:5px"><label>Total ON (%):</label><input type="number" id="se-on" style="width:80px"></div>
                 </div>
                 <div id="box-wrapper-hy">
-                    <h3 id="tit-hy">Hoehn y Yahr</h3>
+                    <h3>Hoehn y Yahr</h3>
                     <div class="box-off" id="campo-hy-off"><label>Estadio OFF:</label><input type="number" step="0.5" id="hy-off" style="width:80px"></div>
                     <div class="box-on" id="campo-hy-on" style="margin-top:5px"><label>Estadio ON:</label><input type="number" step="0.5" id="hy-on" style="width:80px"></div>
                 </div>
             </div>
 
             <div id="subsec-pdq">
-                <h3 id="tit-pdq">PDQ-39</h3>
+                <h3>PDQ-39</h3>
                 <div class="grid-datos">
                     <div class="campo" id="campo-pdq-total"><label>Total PDQ-39:</label><input type="number" id="pdq-total" style="width:100px"></div>
                 </div>
@@ -627,7 +637,7 @@
         }
 
         // Fahn Tolosa
-        let ftOffVacio = (!document.getElementById('ft-off-a').value.trim() && !document.getElementById('ft-off-b').value.trim() && !document.getElementById('ft-off-a').value.trim());
+        let ftOffVacio = (!document.getElementById('ft-off-a').value.trim() && !document.getElementById('ft-off-b').value.trim() && !document.getElementById('ft-off-c').value.trim());
         let ftOnVacio = (!document.getElementById('ft-on-a').value.trim() && !document.getElementById('ft-on-b').value.trim());
         
         if(ftOffVacio) {
@@ -663,6 +673,12 @@
             document.getElementById('subsec-updrs-wrapper').classList.add('hidden');
         }
 
+        // Ocultamiento condicional para la nueva sección de UPDRS III si no tiene datos
+        let up3Vacio = (!document.getElementById('up3-suspension').value.trim() && !document.getElementById('up3-demora').value.trim() && !document.getElementById('up3-respuesta').value.trim());
+        if(up3Vacio) {
+            document.getElementById('subsec-updrs-iii').classList.add('hidden');
+        }
+
         // Schwab & England / Hoehn y Yahr
         let seOffVacio = !document.getElementById('se-off').value.trim();
         let seOnVacio = !document.getElementById('se-on').value.trim();
@@ -685,7 +701,7 @@
         if(pdqVacio) document.getElementById('subsec-pdq').classList.add('hidden');
 
         // Envoltura de Escalas General
-        if(ftOffVacio && ftOnVacio && !document.getElementById('ft-severidad-obtenido').value.trim() && upOffVacio && upOnVacio && seOffVacio && seOnVacio && hyOffVacio && hyOnVacio && pdqVacio) {
+        if(ftOffVacio && ftOnVacio && !document.getElementById('ft-severidad-obtenido').value.trim() && upOffVacio && upOnVacio && up3Vacio && seOffVacio && seOnVacio && hyOffVacio && hyOnVacio && pdqVacio) {
             document.getElementById('sec-escalas-wrapper').classList.add('hidden');
         }
 
