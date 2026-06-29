@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informe Final Neurología - CENIT</title>
+    <style>
+        :root { 
+            --azul-oscuro: #222951; 
+            --azul-medio: #1e56a0; 
+            --azul-claro: #d6e4f0;
+            --azul-intercalado: #f1f6fa;
+            --gris-fondo: #f9f9f9; 
+            --blanco: #ffffff;
+            --rojo-borrar: #c0392b;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            background: var(--azul-claro); 
+            color: #333; 
+            margin: 0; 
+            padding: 20px; 
+            line-height: 1.4;
+        }
+
+        /* --- ESTILOS PANTALLA (Cuestionario) --- */
+        #header-pdf {
+            display: none; /* No se ve mientras completas los datos */
+        }
+
+        .container { 
+            max-width: 1100px; 
+            margin: auto; 
+            background: var(--blanco); 
+            padding: 30px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15); 
+        }
+        
+        h1 { 
+            color: var(--azul-oscuro); 
+            text-align: center; 
+            margin-bottom: 20px; 
+            font-size: 2em; 
+            font-weight: 800;
+            border-bottom: 3px solid var(--azul-oscuro); 
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            background: var(--azul-oscuro);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 1.2em;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+
+        h3 {
+            color: var(--azul-medio);
+            border-bottom: 1px solid var(--azul-claro);
+            font-size: 1.1em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+        }
+
+        .grid-datos {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            background: var(--gris-fondo);
+            padding: 15px;
+            border: 1px solid var(--azul-claro);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .campo { display: flex; flex-direction: column; }
+        .campo label { font-weight: bold; font-size: 0.85em; color: var(--azul-oscuro); margin-bottom: 2px; }
+        
+        input, select, textarea {
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.9em;
+            background: white;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; font-size: 0.9em; }
+        th { background: var(--azul-medio); color: white; padding: 8px; text-align: left; }
+        td { padding: 5px; border: 1px solid #ddd; }
+        .btn-add { background: var(--azul-oscuro); color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; margin-top: 5px; font-size: 0.8em; }
+
+        .escala-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .box-off { border: 2px solid #e74c3c; border-radius: 6px; padding: 10px; background: #fff5f5; }
+        .box-on { border: 2px solid #27ae60; border-radius: 6px; padding: 10px; background: #f4fff8; }
+        .box-title { font-weight: bold; text-align: center; margin-bottom: 8px; text-transform: uppercase; font-size: 0.85em; }
+        
+        .total-badge {
+            background: var(--azul-oscuro);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .opciones-flex { display: flex; flex-wrap: wrap; gap: 10px; padding: 5px 0; }
+        .item-check { display: flex; align-items: center; gap: 5px; font-size: 0.85em; }
+
+        .firma-container {
+            margin-top: 50px;
+            display: flex;
+            justify-content: flex-end;
+            padding-right: 50px;
+        }
+
+        .firma-box {
+            width: 250px;
+            text-align: center;
+            border-top: 2px solid var(--azul-oscuro);
+            padding-top: 10px;
+        }
+
+        .firma-box p {
+            margin: 0;
+            font-size: 0.9em;
+            color: var(--azul-oscuro);
+            font-weight: bold;
+        }
+
+        .acciones { display: flex; gap: 15px; margin-top: 30px; }
+        .btn { flex: 1; padding: 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
+        .btn-print { background: var(--azul-medio); }
+        .btn-clear { background: var(--rojo-borrar); }
+
+        .hidden { display: none !important; }
+
+        /* --- CONFIGURACIÓN DE IMPRESIÓN --- */
+        @media print {
+            @page {
+                margin: 0; 
+            }
+
+            body { 
+                background: white; 
+                padding: 0;
+            }
+
+            #header-pdf {
+                display: flex !important;
+                background-color: var(--azul-oscuro); 
+                width: 100%; 
+                height: 100px; 
+                align-items: center;
+                justify-content: center; 
+                padding: 0 40px; 
+                box-sizing: border-box;
+                -webkit-print-color-adjust: exact;
+                margin-bottom: 20px; 
+            }
+
+            #header-pdf img {
+                height: 250px; 
+                width: auto;
+                display: block; 
+                margin-top: 50px; 
+            }
+
+            #header-pdf .titulo-header { display: none; }
+
+            .container { 
+                box-shadow: none; 
+                border: none; 
+                width: 100%; 
+                max-width: 100%; 
+                padding: 20px 40px; 
+                margin-top: 0; 
+                box-sizing: border-box; 
+            }
+
+            h1 { 
+                color: var(--azul-oscuro); 
+                text-align: center; 
+                margin-top: 0; 
+                font-size: 1.5em; 
+                font-weight: 800;
+                border-bottom: 2px solid var(--azul-oscuro); 
+                padding-bottom: 5px;
+            }
+
+            .no-print, .btn, .btn-add, .acciones, input[type="checkbox"], select { display: none !important; }
+            h2 { -webkit-print-color-adjust: exact; background-color: var(--azul-oscuro) !important; color: white !important; padding: 5px 10px; margin-top: 15px; }
+            
+            /* NUEVO AJUSTE: Evita que las cuadrículas de datos compartidos se dividan de forma desprolija */
+            .grid-datos { 
+                background: none !important; 
+                border: 1px solid #eee; 
+                grid-template-columns: repeat(3, 1fr); 
+                gap: 5px; 
+                padding: 10px; 
+                page-break-inside: avoid; 
+            }
+            
+            /* NUEVO AJUSTE: Evita que los recuadros de escalas, tablas o firmas queden cortados a la mitad */
+            .box-off, .box-on, table, tr, .firma-container, #campo-ea-progresion, .escala-container { 
+                background: white !important; 
+                -webkit-print-color-adjust: exact; 
+                page-break-inside: avoid; 
+            }
+            
+            input, textarea { border: none !important; padding: 0 !important; background: transparent !important; }
+            .item-check:not(.checked-print) { display: none !important; }
+            .checked-print { display: inline-block; margin-right: 10px; font-weight: bold; }
+            
+            /* NUEVO AJUSTE: Evita que un título quede solo al final de una página (huérfano) */
+            h2, h3 { page-break-after: avoid; }
+            
+            /* Ajuste para que los cuadros ON u OFF ocupen todo el ancho si el otro se oculta */
+            .escala-container.full-print-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div id="informe-total">
+    
+    <div id="header-pdf">
+        <img src="image_2.png" alt="Logo CENIT embebido">
+    </div>
+
+    <div class="container">
+        <h1>Informe Final Neurología</h1>
+
+        <div id="sec-datos-paciente" class="grid-datos">
+            <div class="campo"><label>Nombre y Apellido:</label><input type="text" id="nombre"></div>
+            <div class="campo"><label>Fecha:</label><input type="date" id="fecha"></div>
+            <div class="campo"><label>Diagnóstico:</label><input type="text" id="diagnostico"></div>
+            <div class="campo"><label>Ciudad:</label><input type="text" id="ciudad"></div>
+            <div class="campo"><label>Edad:</label><input type="number" id="edad"></div>
+            <div class="campo"><label>Fecha de Nacimiento:</label><input type="date" id="nacimiento"></div>
+            <div class="campo"><label>DNI:</label><input type="text" id="dni"></div>
+            <div class="campo"><label>Obra Social / Prepaga:</label><input type="text" id="obrasocial"></div>
+            <div class="campo"><label>Escolaridad:</label><input type="text" id="escolaridad"></div>
+            <div class="campo">
+                <label>Dominancia:</label>
+                <select id="dominancia">
+                    <option value="">Seleccionar</option>
+                    <option value="Derecha">Derecha</option>
+                    <option value="Izquierda">Izquierda</option>
+                </select>
+            </div>
+            <div class="campo"><label>Ocupación:</label><input type="text" id="ocupacion"></div>
+            <div class="campo"><label>Convivientes:</label><input type="text" id="convivientes"></div>
+            <div class="campo"><label>Médico Evaluador:</label><input type="text" id="evaluador"></div>
+            <div class="campo"><label>Médico Derivador:</label><input type="text" id="derivador"></div>
+        </div>
+
+        <div id="sec-antecedentes-wrapper">
+            <h2 id="tit-antecedentes">Antecedentes</h2>
+            <div class="grid-datos">
+                <div class="full-width" id="campo-ant-medicos">
+                    <label>Antecedentes Médicos:</label>
+                    <div class="opciones-flex">
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="HTA"> HTA</label>
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="DBT"> DBT</label>
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="DLP"> DLP</label>
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="TBQ"> TBQ</label>
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="IAM"> IAM</label>
+                        <label class="item-check"><input type="checkbox" class="ant-chk" value="ACV/AIT"> ACV/AIT</label>
+                        <label class="item-check"><input type="checkbox" id="ant-otro-check" onchange="toggle('ant-otro-div', this.checked)"> Otros</label>
+                    </div>
+                    <div id="ant-otro-div" class="hidden" style="margin-top:5px">
+                        <input type="text" id="ant-otro-cual" placeholder="¿Cuál?" style="width:100%">
+                    </div>
+                </div>
+                <div class="campo" id="campo-ant-quir">
+                    <label>Antecedentes Quirúrgicos:</label>
+                    <select id="ant-quir" onchange="toggle('ant-quir-div', this.value === 'Si')">
+                        <option value="No">No</option><option value="Si">Si</option>
+                    </select>
+                    <div id="ant-quir-div" class="hidden" style="margin-top:5px">
+                        <input type="text" id="ant-quir-cual" placeholder="¿Cuál?">
+                    </div>
+                </div>
+                <div class="campo" id="campo-ant-fam">
+                    <label>Antecedentes Familiares Neurológicos:</label>
+                    <select id="ant-fam" onchange="toggle('ant-fam-div', this.value === 'Si')">
+                        <option value="No">No</option><option value="Si">Si</option>
+                    </select>
+                    <div id="ant-fam-div" class="hidden" style="margin-top:5px">
+                        <input type="text" id="ant-fam-cual" placeholder="¿Cuál?">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-medicacion-wrapper">
+            <h2 id="tit-medicacion">Medicación Habitual</h2>
+            <table id="med-tabla">
+                <thead>
+                    <tr>
+                        <th>Medicación</th>
+                        <th>Marca</th>
+                        <th>Dosis</th>
+                        <th>Dosis Total Diaria</th>
+                        <th class="no-print"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input type="text" class="med-row"></td>
+                        <td><input type="text" class="med-row"></td>
+                        <td><input type="text" class="med-row"></td>
+                        <td><input type="text" class="med-row"></td>
+                        <td class="no-print"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn-add no-print" onclick="addMed()">+ Agregar Fila</button>
+        </div>
+
+        <div id="sec-enfermedad-wrapper">
+            <h2 id="tit-enfermedad">Enfermedad Actual</h2>
+            <div class="grid-datos">
+                <div class="campo" id="campo-ea-anio"><label>Año Diagnóstico:</label><input type="text" id="ea-anio"></div>
+                <div class="campo" id="campo-ea-sintoma"><label>Primer Síntoma:</label><input type="text" id="ea-sintoma"></div>
+                <div class="campo" id="campo-ea-tratamiento"><label>Primer Tratamiento:</label><input type="text" id="ea-tratamiento"></div>
+                <div class="campo" id="campo-ea-respuesta"><label>Respuesta Inicial:</label><input type="text" id="ea-respuesta"></div>
+                <div class="full-width" id="campo-ea-progresion" style="display: flex; flex-direction: column;"><label style="font-weight: bold; font-size: 0.85em; color: var(--azul-oscuro); margin-bottom: 2px;">Progresión de los Síntomas:</label><textarea id="ea-progresion" rows="6" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;"></textarea></div>
+            </div>
+
+            <div id="subsec-premotores">
+                <h3 id="tit-premotores">Síntomas Pre-motores</h3>
+                <div class="grid-datos">
+                    <div class="full-width">
+                        <div class="opciones-flex">
+                            <label class="item-check"><input type="checkbox" class="pre-chk" value="Hiposmia"> Hiposmia</label>
+                            <label class="item-check"><input type="checkbox" class="pre-chk" value="Constipación"> Constipación</label>
+                            <label class="item-check"><input type="checkbox" class="pre-chk" value="Trastornos REM"> Trastornos del sueño REM</label>
+                            <label class="item-check"><input type="checkbox" class="pre-chk" value="Trastornos Ánimo"> Trastornos del ánimo</label>
+                            <label class="item-check"><input type="checkbox" id="pre-otro-check" onchange="toggle('pre-otro-div', this.checked)"> Otros</label>
+                        </div>
+                        <div id="pre-otro-div" class="hidden" style="margin-top:5px">
+                            <input type="text" id="pre-otro-cual" placeholder="¿Cuál?" style="width:100%">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="subsec-problemas">
+                <h3 id="tit-problemas">Problemas Activos</h3>
+                <div class="grid-datos">
+                    <div class="campo" id="campo-pa-inicio"><label>Inicio del ON:</label><input type="text" id="pa-on-inicio"></div>
+                    <div class="campo" id="campo-pa-dur"><label>Duración del ON:</label><input type="text" id="pa-on-dur"></div>
+                    <div class="campo" id="campo-pa-wear"><label>Wearing OFF:</label><input type="text" id="pa-off-wear"></div>
+                    <div class="campo" id="campo-pa-per"><label>Períodos OFF:</label><input type="text" id="pa-off-per"></div>
+                    <div class="campo" id="campo-pa-cong"><label>Congelamientos:</label><input type="text" id="pa-cong"></div>
+                    <div class="campo" id="campo-pa-disc"><label>Discinesias:</label><input type="text" id="pa-disc"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-escalas-wrapper">
+            <h2 id="tit-escalas">Escalas</h2>
+            
+            <div id="subsec-ft-wrapper">
+                <h3 id="tit-ft">Fahn Tolosa</h3>
+                <div class="escala-container" id="container-ft">
+                    <div class="box-off" id="box-ft-off">
+                        <div class="box-title">Estado OFF</div>
+                        <div class="campo" id="campo-ft-off-a"><label>Parte A:</label><input type="number" id="ft-off-a" oninput="calcFT()"></div>
+                        <div class="campo" id="campo-ft-off-b"><label>Parte B:</label><input type="number" id="ft-off-b" oninput="calcFT()"></div>
+                        <div class="campo" id="campo-ft-off-c"><label>Parte C:</label><input type="number" id="ft-off-c" oninput="calcFT()"></div>
+                        <div class="total-badge" id="badge-ft-off">Total OFF: <span id="res-ft-off">0</span></div>
+                    </div>
+                    <div class="box-on" id="box-ft-on">
+                        <div class="box-title">Estado ON</div>
+                        <div class="campo" id="campo-ft-on-a"><label>Parte A:</label><input type="number" id="ft-on-a" oninput="calcFT()"></div>
+                        <div class="campo" id="campo-ft-on-b"><label>Parte B:</label><input type="number" id="ft-on-b" oninput="calcFT()"></div>
+                        <div class="total-badge" id="badge-ft-on">Total ON: <span id="res-ft-on">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="subsec-ft-severidad">
+                <h3 id="tit-ft-severidad">Porcentaje de severidad (Fahn Tolosa)</h3>
+                <div class="grid-datos">
+                    <div class="campo" id="campo-ft-sev-obt"><label>Valor Total Obtenido:</label><input type="number" id="ft-severidad-obtenido" oninput="calcSeveridadFT()"></div>
+                    <div class="campo" id="campo-ft-sev-max"><label>Valor Total Máximo:</label><input type="number" id="ft-severidad-maximo" value="156" disabled></div>
+                    <div class="campo full-width" id="campo-ft-sev-res" style="margin-top: 5px;"><label>Resultado de Severidad:</label><input type="text" id="ft-severidad-resultado" readonly style="font-weight: bold; background-color: var(--gris-fondo);"></div>
+                </div>
+            </div>
+
+            <div id="subsec-updrs-wrapper">
+                <h3 id="tit-updrs">UPDRS</h3>
+                <div class="escala-container" id="container-updrs">
+                    <div class="box-off" id="box-up-off">
+                        <div class="box-title">Estado OFF</div>
+                        <div class="campo" id="campo-up-off-1"><label>Parte I:</label><input type="number" id="up-off-1" oninput="calcUP()"></div>
+                        <div class="campo" id="campo-up-off-2"><label>Parte II:</label><input type="number" id="up-off-2" oninput="calcUP()"></div>
+                        <div class="campo" id="campo-up-off-3"><label>Parte III:</label><input type="number" id="up-off-3" oninput="calcUP()"></div>
+                        <div class="campo" id="campo-up-off-4"><label>Parte IV:</label><input type="number" id="up-off-4" oninput="calcUP()"></div>
+                        <div class="total-badge" id="badge-up-off">Total OFF: <span id="res-up-off">0</span></div>
+                    </div>
+                    <div class="box-on" id="box-up-on">
+                        <div class="box-title">Estado ON</div>
+                        <div class="campo" id="campo-up-on-3"><label>Parte III:</label><input type="number" id="up-on-3"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="escala-container" id="subsec-se-hy">
+                <div id="box-wrapper-se">
+                    <h3 id="tit-se">Schwab & England</h3>
+                    <div class="box-off" id="campo-se-off"><label>Total OFF (%):</label><input type="number" id="se-off" style="width:80px"></div>
+                    <div class="box-on" id="campo-se-on" style="margin-top:5px"><label>Total ON (%):</label><input type="number" id="se-on" style="width:80px"></div>
+                </div>
+                <div id="box-wrapper-hy">
+                    <h3 id="tit-hy">Hoehn y Yahr</h3>
+                    <div class="box-off" id="campo-hy-off"><label>Estadio OFF:</label><input type="number" step="0.5" id="hy-off" style="width:80px"></div>
+                    <div class="box-on" id="campo-hy-on" style="margin-top:5px"><label>Estadio ON:</label><input type="number" step="0.5" id="hy-on" style="width:80px"></div>
+                </div>
+            </div>
+
+            <div id="subsec-pdq">
+                <h3 id="tit-pdq">PDQ-39</h3>
+                <div class="grid-datos">
+                    <div class="campo" id="campo-pdq-total"><label>Total PDQ-39:</label><input type="number" id="pdq-total" style="width:100px"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sec-conclusion-wrapper">
+            <h2 id="tit-conclusion">Conclusión</h2>
+            <textarea id="conclusion" rows="6" style="width:100%; border:1px solid #ccc;"></textarea>
+        </div>
+
+        <div class="firma-container">
+            <div class="firma-box">
+                <p>Firma y Sello del Evaluador</p>
+            </div>
+        </div>
+
+        <div class="acciones no-print">
+            <button class="btn btn-print" onclick="imprimir()">Imprimir Formulario</button>
+            <button class="btn btn-clear" onclick="limpiar()">Limpiar Formulario</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggle(id, show) {
+        const el = document.getElementById(id);
+        if(el) el.classList.toggle('hidden', !show);
+    }
+
+    function addMed() {
+        const tbody = document.querySelector('#med-tabla tbody');
+        const row = tbody.insertRow();
+        row.innerHTML = `<td><input type="text" class="med-row"></td><td><input type="text" class="med-row"></td><td><input type="text" class="med-row"></td><td><input type="text" class="med-row"></td><td class="no-print"><button onclick="this.parentElement.parentElement.remove()" style="color:red; border:none; background:none; cursor:pointer">X</button></td>`;
+    }
+
+    function calcFT() {
+        const offA = parseFloat(document.getElementById('ft-off-a').value) || 0;
+        const offB = parseFloat(document.getElementById('ft-off-b').value) || 0;
+        const offC = parseFloat(document.getElementById('ft-off-c').value) || 0;
+        document.getElementById('res-ft-off').innerText = offA + offB + offC;
+
+        const onA = parseFloat(document.getElementById('ft-on-a').value) || 0;
+        const onB = parseFloat(document.getElementById('ft-on-b').value) || 0;
+        document.getElementById('res-ft-on').innerText = onA + onB;
+    }
+
+    function calcSeveridadFT() {
+        const obtenido = parseFloat(document.getElementById('ft-severidad-obtenido').value);
+        const maximo = 156;
+        const resultadoField = document.getElementById('ft-severidad-resultado');
+        
+        if (isNaN(obtenido) || obtenido === null || obtenido === "") {
+            resultadoField.value = "";
+            return;
+        }
+
+        const porcentaje = Math.round((obtenido / maximo) * 100);
+        let descripcion = "";
+
+        if (porcentaje === 0) {
+            descripcion = "Sin discapacidad funcional";
+        } else if (porcentaje >= 1 && porcentaje <= 24) {
+            descripcion = "Leve discapacidad";
+        } else if (porcentaje >= 25 && porcentaje <= 49) {
+            descripcion = "Moderada discapacidad";
+        } else if (porcentaje >= 50 && porcentaje <= 74) {
+            descripcion = "Marcada discapacidad";
+        } else if (porcentaje >= 75 && porcentaje <= 100) {
+            descripcion = "Severa discapacidad";
+        } else {
+            descripcion = "Valor fuera de rango";
+        }
+
+        resultadoField.value = porcentaje + "% - " + descripcion;
+    }
+
+    function calcUP() {
+        const v1 = parseFloat(document.getElementById('up-off-1').value) || 0;
+        const v2 = parseFloat(document.getElementById('up-off-2').value) || 0;
+        const v3 = parseFloat(document.getElementById('up-off-3').value) || 0;
+        const v4 = parseFloat(document.getElementById('up-off-4').value) || 0;
+        document.getElementById('res-up-off').innerText = v1 + v2 + v3 + v4;
+    }
+
+    function guardar() {
+        const data = {};
+        document.querySelectorAll('input, select, textarea').forEach(el => {
+            if(el.type === 'checkbox') data[el.id || el.className + el.value] = el.checked;
+            else data[el.id] = el.value;
+        });
+        localStorage.setItem('inf_neuro_save', JSON.stringify(data));
+    }
+
+    window.onload = () => {
+        const saved = JSON.parse(localStorage.getItem('inf_neuro_save'));
+        if(saved) {
+            document.querySelectorAll('input, select, textarea').forEach(el => {
+                if(el.type === 'checkbox') el.checked = saved[el.id || el.className + el.value];
+                else if(saved[el.id]) el.value = saved[el.id];
+            });
+            if(document.getElementById('ant-otro-check') && document.getElementById('ant-otro-check').checked) toggle('ant-otro-div', true);
+            if(document.getElementById('ant-quir') && document.getElementById('ant-quir').value === 'Si') toggle('ant-quir-div', true);
+            if(document.getElementById('ant-fam') && document.getElementById('ant-fam').value === 'Si') toggle('ant-fam-div', true);
+            if(document.getElementById('pre-otro-check') && document.getElementById('pre-otro-check').checked) toggle('pre-otro-div', true);
+            calcFT(); calcSeveridadFT(); calcUP();
+        }
+    };
+
+    document.addEventListener('input', guardar);
+
+    function limpiar() {
+        if(confirm("¿Seguro que desea borrar todos los datos?")) {
+            localStorage.removeItem('inf_neuro_save');
+            location.reload();
+        }
+    }
+
+    function imprimir() {
+        // 1. Gestionar checkboxes seleccionados para la impresión
+        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+            if(cb.checked) cb.parentElement.classList.add('checked-print');
+        });
+
+        // 2. Ocultar de manera individual los contenedores de inputs/textareas vacíos
+        document.querySelectorAll('input[type="text"], input[type="number"], textarea').forEach(el => {
+            const wrap = el.closest('.campo') || el.closest('#campo-ea-progresion') || el.closest('.full-width');
+            if(wrap && !el.value && !el.id.includes('ft') && !el.id.includes('up') && el.id !== 'ft-severidad-maximo') {
+                wrap.classList.add('hidden');
+            }
+        });
+
+        // Ocultar campos vacíos individuales dentro de las cajas ON/OFF de las escalas
+        const subCamposEscalas = ['ft-off-a', 'ft-off-b', 'ft-off-c', 'ft-on-a', 'ft-on-b', 'up-off-1', 'up-off-2', 'up-off-3', 'up-off-4', 'up-on-3'];
+        subCamposEscalas.forEach(id => {
+            const el = document.getElementById(id);
+            if(el && !el.value.trim()) el.closest('.campo')?.classList.add('hidden');
+        });
+
+        // Ocultar filas vacías de la tabla de medicación
+        document.querySelectorAll('#med-tabla tbody tr').forEach(tr => {
+            const inputs = tr.querySelectorAll('input');
+            let vacia = true;
+            inputs.forEach(i => { if(i.value.trim() !== "") vacia = false; });
+            if(vacia) tr.classList.add('hidden');
+        });
+
+        // 3. COMPROBACIÓN EXCLUSIVA: Ocultar secciones/subtítulos completos si no tienen información útil
+        let datosPacientesVacios = true;
+        document.querySelectorAll('#sec-datos-paciente input, #sec-datos-paciente select').forEach(el => {
+            if(el.value.trim() !== "") datosPacientesVacios = false;
+        });
+        if(datosPacientesVacios) document.getElementById('sec-datos-paciente').classList.add('hidden');
+
+        // Antecedentes
+        let antVacios = true;
+        document.querySelectorAll('.ant-chk:checked').forEach(() => antVacios = false);
+        if(document.getElementById('ant-otro-check').checked && document.getElementById('ant-otro-cual').value.trim() !== "") antVacios = false;
+        if(document.getElementById('ant-quir').value === 'Si' && document.getElementById('ant-quir-cual').value.trim() !== "") antVacios = false;
+        if(document.getElementById('ant-fam').value === 'Si' && document.getElementById('ant-fam-cual').value.trim() !== "") antVacios = false;
+        if(antVacios) document.getElementById('sec-antecedentes-wrapper').classList.add('hidden');
+
+        // Medicación
+        let medVacia = true;
+        document.querySelectorAll('.med-row').forEach(i => { if(i.value.trim() !== "") medVacia = false; });
+        if(medVacia) document.getElementById('sec-medicacion-wrapper').classList.add('hidden');
+
+        // Síntomas Pre-motores
+        let preVacios = true;
+        document.querySelectorAll('.pre-chk:checked').forEach(() => preVacios = false);
+        if(document.getElementById('pre-otro-check').checked && document.getElementById('pre-otro-cual').value.trim() !== "") preVacios = false;
+        if(preVacios) document.getElementById('subsec-premotores').classList.add('hidden');
+
+        // Problemas Activos
+        let probVacios = true;
+        const paInputs = ['pa-on-inicio', 'pa-on-dur', 'pa-off-wear', 'pa-off-per', 'pa-cong', 'pa-disc'];
+        paInputs.forEach(id => { if(document.getElementById(id).value.trim() !== "") probVacios = false; });
+        if(probVacios) document.getElementById('subsec-problemas').classList.add('hidden');
+
+        // Bloque unificado de Enfermedad Actual
+        let eaVacia = true;
+        const eaInputs = ['ea-anio', 'ea-sintoma', 'ea-tratamiento', 'ea-respuesta', 'ea-progresion'];
+        eaInputs.forEach(id => { if(document.getElementById(id).value.trim() !== "") eaVacia = false; });
+        if(eaVacia && preVacios && probVacios) {
+            document.getElementById('sec-enfermedad-wrapper').classList.add('hidden');
+        }
+
+        // Fahn Tolosa
+        let ftOffVacio = (!document.getElementById('ft-off-a').value.trim() && !document.getElementById('ft-off-b').value.trim() && !document.getElementById('ft-off-a').value.trim());
+        let ftOnVacio = (!document.getElementById('ft-on-a').value.trim() && !document.getElementById('ft-on-b').value.trim());
+        
+        if(ftOffVacio) {
+            document.getElementById('box-ft-off').classList.add('hidden');
+            document.getElementById('container-ft').classList.add('full-print-grid');
+        }
+        if(ftOnVacio) {
+            document.getElementById('box-ft-on').classList.add('hidden');
+            document.getElementById('container-ft').classList.add('full-print-grid');
+        }
+        if(ftOffVacio && ftOnVacio) {
+            document.getElementById('subsec-ft-wrapper').classList.add('hidden');
+        }
+
+        // Porcentaje Severidad Fahn Tolosa
+        if(!document.getElementById('ft-severidad-obtenido').value.trim()) {
+            document.getElementById('subsec-ft-severidad').classList.add('hidden');
+        }
+
+        // UPDRS
+        let upOffVacio = (!document.getElementById('up-off-1').value.trim() && !document.getElementById('up-off-2').value.trim() && !document.getElementById('up-off-3').value.trim() && !document.getElementById('up-off-4').value.trim());
+        let upOnVacio = (!document.getElementById('up-on-3').value.trim());
+
+        if(upOffVacio) {
+            document.getElementById('box-up-off').classList.add('hidden');
+            document.getElementById('container-updrs').classList.add('full-print-grid');
+        }
+        if(upOnVacio) {
+            document.getElementById('box-up-on').classList.add('hidden');
+            document.getElementById('container-updrs').classList.add('full-print-grid');
+        }
+        if(upOffVacio && upOnVacio) {
+            document.getElementById('subsec-updrs-wrapper').classList.add('hidden');
+        }
+
+        // Schwab & England / Hoehn y Yahr
+        let seOffVacio = !document.getElementById('se-off').value.trim();
+        let seOnVacio = !document.getElementById('se-on').value.trim();
+        if(seOffVacio) document.getElementById('campo-se-off').classList.add('hidden');
+        if(seOnVacio) document.getElementById('campo-se-on').classList.add('hidden');
+        if(seOffVacio && seOnVacio) document.getElementById('box-wrapper-se').classList.add('hidden');
+
+        let hyOffVacio = !document.getElementById('hy-off').value.trim();
+        let hyOnVacio = !document.getElementById('hy-on').value.trim();
+        if(hyOffVacio) document.getElementById('campo-hy-off').classList.add('hidden');
+        if(hyOnVacio) document.getElementById('campo-hy-on').classList.add('hidden');
+        if(hyOffVacio && hyOnVacio) document.getElementById('box-wrapper-hy').classList.add('hidden');
+
+        if(seOffVacio && seOnVacio && hyOffVacio && hyOnVacio) {
+            document.getElementById('subsec-se-hy').classList.add('hidden');
+        }
+
+        // PDQ-39
+        let pdqVacio = !document.getElementById('pdq-total').value.trim();
+        if(pdqVacio) document.getElementById('subsec-pdq').classList.add('hidden');
+
+        // Envoltura de Escalas General
+        if(ftOffVacio && ftOnVacio && !document.getElementById('ft-severidad-obtenido').value.trim() && upOffVacio && upOnVacio && seOffVacio && seOnVacio && hyOffVacio && hyOnVacio && pdqVacio) {
+            document.getElementById('sec-escalas-wrapper').classList.add('hidden');
+        }
+
+        // Conclusión
+        if(!document.getElementById('conclusion').value.trim()) document.getElementById('sec-conclusion-wrapper').classList.add('hidden');
+
+        // 4. Lanzar la ventana de impresión nativa
+        window.print();
+
+        // 5. Restaurar visibilidad completa de la pantalla original
+        setTimeout(() => {
+            document.querySelectorAll('.hidden').forEach(el => {
+                if(!el.id.includes('div')) el.classList.remove('hidden');
+            });
+            document.querySelectorAll('.checked-print').forEach(el => el.classList.remove('checked-print'));
+            document.querySelectorAll('.escala-container').forEach(el => el.classList.remove('full-print-grid'));
+        }, 1000);
+    }
+</script>
+
+</body>
+</html>
